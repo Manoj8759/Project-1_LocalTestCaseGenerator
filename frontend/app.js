@@ -37,45 +37,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     generateBtn.addEventListener('click', handleGeneration);
 
+    let isGenerating = false;
+
     // 3. Generation Logic (Streaming)
     async function handleGeneration() {
         const text = featureInput.value.trim();
-        if (!text) return;
+        if (!text || isGenerating) return;
+
+        isGenerating = true;
 
         // UI Updates
         generateBtn.disabled = true;
         generateBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
         welcomeState.classList.add('hidden');
 
+        // CLEAR PREVIOUS ERROR CARDS to keep UI clean
+        const existingErrors = document.querySelectorAll('.error-card');
+        existingErrors.forEach(err => err.remove());
+
         // Create a result card immediately for streaming
         const resultId = createResultCard(text, "");
         const resultContentDiv = document.getElementById(resultId).querySelector('.result-content');
 
+        // Thinking placeholder
+        resultContentDiv.innerHTML = '<p class="thinking-text" style="color: var(--text-secondary); opacity: 0.7;"><i class="fa-solid fa-ellipsis fa-fade"></i> AI is brainstorming...</p>';
+
         try {
-            console.log("Starting stream...");
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ input: text })
             });
 
-            if (!response.ok) throw new Error(response.statusText);
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let accumulatedText = "";
             let lastRenderTime = 0;
-            const RENDER_INTERVAL = 50; // Render every 50ms to save CPU
+            const RENDER_INTERVAL = 40; // Balanced rendering
 
-            console.log("Stream connected, receiving data...");
+            let firstChunk = true;
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) {
-                    // Final render to catch remaining text
                     resultContentDiv.innerHTML = marked.parse(accumulatedText);
-                    console.log("Stream finished.");
                     break;
+                }
+
+                if (firstChunk) {
+                    resultContentDiv.innerHTML = "";
+                    firstChunk = false;
                 }
 
                 const chunk = decoder.decode(value, { stream: true });
@@ -86,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     resultContentDiv.innerHTML = marked.parse(accumulatedText);
                     lastRenderTime = now;
 
-                    // Auto-scroll
                     window.scrollTo({
                         top: document.body.scrollHeight,
                         behavior: 'smooth'
@@ -94,15 +106,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Final consistency check
             featureInput.value = '';
             featureInput.style.height = 'auto';
 
         } catch (error) {
-            document.getElementById(resultId)?.remove();
-            createErrorCard("Network Error", "Connection lost or server error.");
-            console.error(error);
+            console.error('Frontend Error:', error);
+            // Show inline error instead of removing the card
+            const errorDiv = document.createElement('div');
+            errorDiv.style.borderTop = '1px solid #ef4444';
+            errorDiv.style.marginTop = '1rem';
+            errorDiv.style.paddingTop = '1rem';
+            errorDiv.innerHTML = `<span style="color: #ef4444; font-size: 0.9rem;"><i class="fa-solid fa-triangle-exclamation"></i> <strong>Stream Interrupted</strong>: ${error.message}</span>`;
+            resultContentDiv.appendChild(errorDiv);
         } finally {
+            isGenerating = false;
             generateBtn.disabled = false;
             generateBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Generate`;
             if (featureInput.value.length < 5) generateBtn.disabled = true;
