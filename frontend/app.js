@@ -64,19 +64,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let accumulatedText = "";
+            let lastRenderTime = 0;
+            const RENDER_INTERVAL = 50; // Render every 50ms to save CPU
+
+            console.log("Stream connected, receiving data...");
 
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                if (done) {
+                    // Final render to catch remaining text
+                    resultContentDiv.innerHTML = marked.parse(accumulatedText);
+                    console.log("Stream finished.");
+                    break;
+                }
 
                 const chunk = decoder.decode(value, { stream: true });
                 accumulatedText += chunk;
 
-                // Update UI visually
-                resultContentDiv.innerHTML = marked.parse(accumulatedText);
+                const now = Date.now();
+                if (now - lastRenderTime > RENDER_INTERVAL) {
+                    resultContentDiv.innerHTML = marked.parse(accumulatedText);
+                    lastRenderTime = now;
 
-                // Keep scrolling into view if user is at bottom? 
-                // resultsContainer.scrollTop = resultsContainer.scrollHeight; 
+                    // Auto-scroll
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
             }
 
             // Final consistency check
@@ -84,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             featureInput.style.height = 'auto';
 
         } catch (error) {
-            document.getElementById(resultId)?.remove(); // Remove partial result if total fail
+            document.getElementById(resultId)?.remove();
             createErrorCard("Network Error", "Connection lost or server error.");
             console.error(error);
         } finally {
@@ -100,29 +115,51 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // Helper: Create Result Card (Updated for Stream)
+    // Helper: Create Result Card (Updated for Stream & Efficiency)
     function createResultCard(prompt, initialMarkdown) {
         const id = 'result-' + Date.now();
         const card = document.createElement('div');
-        card.className = 'result-card';
+        card.className = 'result-card animate-slide-up';
         card.id = id;
 
         const timestamp = new Date().toLocaleTimeString();
 
         const header = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
-                <div>
-                    <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Request</span>
-                    <h3 style="margin: 5px 0 0 0; color: white;">${prompt.substring(0, 60)}${prompt.length > 60 ? '...' : ''}</h3>
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                <div style="flex: 1;">
+                    <span style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px;">Feature Brief</span>
+                    <h3 style="margin: 5px 0 0 0; color: white; font-size: 1rem;">${prompt.substring(0, 80)}${prompt.length > 80 ? '...' : ''}</h3>
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);"><i class="fa-regular fa-clock"></i> ${timestamp}</div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button class="action-btn copy-btn" title="Copy Markdown" onclick="copyToClipboard('${id}')">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap;">
+                        <i class="fa-regular fa-clock"></i> ${timestamp}
+                    </div>
+                </div>
             </div>
         `;
 
-        card.innerHTML = header + `<div class="result-content">${marked.parse(initialMarkdown)}</div>`;
+        card.innerHTML = header + `<div class="result-content markdown-body">${marked.parse(initialMarkdown)}</div>`;
         resultsContainer.prepend(card);
         return id;
     }
+
+    // Copy to Clipboard Utility
+    window.copyToClipboard = (cardId) => {
+        const content = document.getElementById(cardId).querySelector('.result-content').innerText;
+        navigator.clipboard.writeText(content).then(() => {
+            const btn = document.querySelector(`#${cardId} .copy-btn`);
+            const icon = btn.querySelector('i');
+            icon.className = 'fa-solid fa-check';
+            btn.style.color = '#10b981';
+            setTimeout(() => {
+                icon.className = 'fa-regular fa-copy';
+                btn.style.color = '';
+            }, 2000);
+        });
+    };
 
     // Helper: Create Error Card
     function createErrorCard(title, details) {

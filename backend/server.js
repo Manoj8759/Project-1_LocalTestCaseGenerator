@@ -18,6 +18,18 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Force no-cache for debugging and ensuring latest frontend logic
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`[📡 ${req.method}] ${req.url} - ${duration}ms`);
+    });
+    next();
+});
+
 // Serve static files from the 'frontend' directory (one level up)
 app.use(express.static(path.join(__dirname, '../frontend')));
 

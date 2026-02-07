@@ -35,11 +35,9 @@ For every test case, you MUST use this exact Markdown format:
 
 ### 🚨 RULES:
 1. **Determinism**: Be precise. No vague steps like "Check if it works."
-2. **Coverage**: Generate at least 3 scenarios:
-   - ✅ Happy Path (Standard Success)
-   - ❌ Negative Path (Error Handling)
-   - ⚠️ Edge Case (Boundary values, weird inputs)
-3. **Format**: Do not output introductory text. Only output the Test Cases in the requested Markdown template.
+2. **Coverage**: Generate at least 3 scenarios covering Happy Path, Negative Path, and Edge Cases.
+3. **Markdown**: Use bold text for keys and professional language.
+4. **Format**: Do not output introductory text. Only output the Test Cases.
 `
 };
 
