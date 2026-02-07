@@ -4,8 +4,8 @@
   "description": "Local LLM Testcase Generator using Ollama (llama3.2)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js"
   },
   "keywords": [
     "ollama",

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity | Local Testcase Generator</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-background">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="app-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-atom brand-icon"></i>
+                <div class="brand-text">
+                    <h1>Gravity</h1>
+                    <span class="badge">PRO</span>
+                </div>
+            </div>
+
+            <nav class="nav-links">
+                <a href="#" class="nav-item active">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Generator</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span>Saved Cases</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="server-status">
+                <div class="status-dot pulse"></div>
+                <span>Ollama: <strong id="ollama-status">Connecting...</strong></span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="breadcrumb">
+                    <span class="text-muted">Tools /</span>
+                    <span class="current">Testcase Generator</span>
+                </div>
+                <div class="model-info">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span>llama3.2</span>
+                </div>
+            </header>
+
+            <div class="content-scroll-area" id="scroll-area">
+                <!-- Welcome State -->
+                <div id="welcome-state" class="welcome-banner">
+                    <div class="banner-content">
+                        <h2>Automated QA Engineering</h2>
+                        <p>Generate precise, deterministic test cases using your local LLM.</p>
+                    </div>
+                </div>
+
+                <!-- Messages / Results Area -->
+                <div id="results-container" class="results-container"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-section">
+                <div class="input-card">
+                    <textarea id="feature-input" placeholder="Describe the feature (e.g., 'User Login with 2FA and Rate Limiting')..." rows="1"></textarea>
+                    <button id="generate-btn" disabled>
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Generate
+                    </button>
+                </div>
+                <p class="disclaimer">Powered by Gravity Engine & Ollama. Results may vary.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
