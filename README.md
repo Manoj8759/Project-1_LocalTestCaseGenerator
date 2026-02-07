@@ -23,6 +23,23 @@ This application allows QA engineers and developers to generate detailed, struct
 
 ---
 
+## 🔄 Process Flow
+
+```mermaid
+graph TD
+    A[User Input] --> B[Frontend app.js]
+    B --> C[POST /api/generate]
+    C --> D[Backend server.js]
+    D --> E[Ollama Controller]
+    E --> F[Ollama API /llama3.2]
+    F -- Streaming Response --> E
+    E -- Process Fragments --> G[Backend Server]
+    G -- SSE / ReadableStream --> B
+    B -- Auto-scroll & Throttled Render --> H[UI Display]
+```
+
+---
+
 ## 🎯 Use Cases
 
 - Generate test cases from user stories or requirements
@@ -90,7 +107,7 @@ ollama serve
 ### Step 4: Start the Application
 
 ```bash
-node server.js
+node backend/server.js
 ```
 
 The server will start on **http://localhost:3000**
@@ -112,11 +129,24 @@ The server will start on **http://localhost:3000**
    - **Test Case ID**
    - **Title**
    - **Description**
-   - **Preconditions**
-   - **Steps**
-   - **Expected Results**
+1.  Open your browser and navigate to: **http://localhost:3000**
 
-5. Copy the generated test cases to your test management tool
+2.  Enter your requirement or user story in the chat interface, for example:
+    ```
+    Generate test cases for a login feature with email and password
+    ```
+
+3.  Click **Generate** or press Enter
+
+4.  The AI will return formatted test cases with:
+    -   **Test Case ID**
+    -   **Title**
+    -   **Description**
+    -   **Preconditions**
+    -   **Steps**
+    -   **Expected Results**
+
+5.  Copy the generated test cases to your test management tool
 
 ---
 
@@ -128,15 +158,18 @@ Project-1_LocalTestCaseGenerator/
 ├── BLAST.md                # B.L.A.S.T. protocol documentation
 ├── README.md               # This file
 ├── package.json            # Node.js dependencies
-├── server.js               # Express backend server
+├── backend/                # Backend logic
+│   ├── server.js           # Express server
+│   ├── config.js           # Configuration constants
+│   └── controllers/        # Logical controllers
+├── frontend/               # UI assets
+│   ├── index.html          # Main HTML
+│   ├── style.css           # Premium styling
+│   └── app.js              # UI Logic
 ├── gemini.md               # Project constitution & schemas
 ├── task_plan.md            # Project phases & checklist
 ├── progress.md             # Development progress log
-├── findings.md             # Research & discoveries
-└── public/                 # Frontend files
-    ├── index.html          # Main HTML page
-    ├── style.css           # Premium CSS styling
-    └── app.js              # Frontend JavaScript
+└── findings.md             # Research & discoveries
 ```
 
 ---
@@ -255,7 +288,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Add support for multiple test case formats (JSON, CSV, Excel)
 - [ ] Implement test case history and saved sessions
 - [ ] Add templating for different testing methodologies
-- [ ] Support for streaming responses
+- [x] Support for streaming responses ✅
 - [ ] Export to popular test management tools (Jira, TestRail)
 - [ ] Multi-language support
 
