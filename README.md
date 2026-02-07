@@ -27,15 +27,14 @@ This application allows QA engineers and developers to generate detailed, struct
 
 ```mermaid
 graph TD
-    A[User Input] --> B[Frontend app.js]
-    B --> C[POST /api/generate]
-    C --> D[Backend server.js]
-    D --> E[Ollama Controller]
-    E --> F[Ollama API /llama3.2]
-    F -- Streaming Response --> E
-    E -- Process Fragments --> G[Backend Server]
-    G -- SSE / ReadableStream --> B
-    B -- Auto-scroll & Throttled Render --> H[UI Display]
+    A["User Input"] --> B["Frontend (app.js)"]
+    B -->|POST /api/generate| C["Backend (server.js)"]
+    C --> D["Ollama Controller"]
+    D --> E["Ollama API (llama3.2)"]
+    E -->|Streaming Data| D
+    D -->|Process Fragments| G["Backend Server"]
+    G -->|SSE Stream| B
+    B -->|Throttled Render| H["UI Display"]
 ```
 
 ---
